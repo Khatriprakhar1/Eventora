@@ -9,6 +9,7 @@ on:
 
 jobs:
   deploy:
+    if: false # Disabled until S3 + CloudFront is set up
     runs-on: ubuntu-latest
 
     steps:

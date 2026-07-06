@@ -9,6 +9,7 @@ on:
 
 jobs:
   deploy:
+    if: false # Disabled until EC2 instance is set up
     runs-on: ubuntu-latest
 
     steps:
