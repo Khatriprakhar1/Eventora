@@ -9,10 +9,13 @@ on:
 
 jobs:
   deploy:
-    if: false # Disabled until EC2 instance is set up
+    if: false # Remove this line when EC2 instance is ready
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -21,15 +24,22 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            # Navigate to project directory (update this to your path on the EC2 instance)
-            cd /home/${{ secrets.EC2_USER }}/Eventora
-            
-            # Pull the latest changes
-            git pull origin main
-            
-            # Navigate to server and install production dependencies
-            cd server
+            # Clone repo if it doesn't exist, otherwise pull latest
+            if [ ! -d "/home/${{ secrets.EC2_USER }}/Eventora" ]; then
+              git clone https://github.com/Khatriprakhar1/Eventora.git /home/${{ secrets.EC2_USER }}/Eventora
+            else
+              cd /home/${{ secrets.EC2_USER }}/Eventora
+              git pull origin main
+            fi
+
+            # Navigate to server directory
+            cd /home/${{ secrets.EC2_USER }}/Eventora/server
+
+            # Install production dependencies
             npm install --production
-            
-            # Restart server using PM2
+
+            # Restart server with PM2 (or start if not running)
             pm2 restart eventora-server || pm2 start server.js --name "eventora-server"
+
+            # Save PM2 process list so it survives reboots
+            pm2 save
