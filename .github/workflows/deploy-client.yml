@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - 'client/**'
+      - 'client/*'
+  workflow_dispatch:
 
 jobs:
   deploy:
