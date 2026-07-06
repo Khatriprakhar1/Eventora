@@ -1,4 +1,4 @@
-name: Deploy Backend (Express)
+name: Deploy Backend to EC2
 
 on:
   push:
@@ -9,7 +9,6 @@ on:
 
 jobs:
   deploy:
-    if: false # Remove this line when EC2 instance is ready
     runs-on: ubuntu-latest
 
     steps:
@@ -24,22 +23,22 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            # Clone repo if it doesn't exist, otherwise pull latest
-            if [ ! -d "/home/${{ secrets.EC2_USER }}/Eventora" ]; then
-              git clone https://github.com/Khatriprakhar1/Eventora.git /home/${{ secrets.EC2_USER }}/Eventora
+            # Clone repo if first time, otherwise pull latest
+            if [ ! -d "/home/ubuntu/Eventora" ]; then
+              git clone https://github.com/Khatriprakhar1/Eventora.git /home/ubuntu/Eventora
             else
-              cd /home/${{ secrets.EC2_USER }}/Eventora
+              cd /home/ubuntu/Eventora
               git pull origin main
             fi
 
-            # Navigate to server directory
-            cd /home/${{ secrets.EC2_USER }}/Eventora/server
+            # Go to server directory
+            cd /home/ubuntu/Eventora/server
 
             # Install production dependencies
             npm install --production
 
-            # Restart server with PM2 (or start if not running)
+            # Restart with PM2 (or start if first time)
             pm2 restart eventora-server || pm2 start server.js --name "eventora-server"
 
-            # Save PM2 process list so it survives reboots
+            # Save PM2 list so it survives reboots
             pm2 save
