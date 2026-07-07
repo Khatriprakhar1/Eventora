@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Minimalist Vercel-style stark black circle -->
+  <circle cx="256" cy="256" r="256" fill="#000000" />
+  
+  <!-- Purely geometric, mathematically perfect 'E' -->
+  <!-- Every bar, gap, and the spine are exactly 46px thick for flawless symmetry -->
+  <path d="M 180 141 L 332 141 L 332 187 L 226 187 L 226 233 L 310 233 L 310 279 L 226 279 L 226 325 L 332 325 L 332 371 L 180 371 Z" fill="#ffffff" />
+</svg>

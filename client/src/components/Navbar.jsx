@@ -158,9 +158,10 @@ const Navbar = () => {
 
                     {/* Logo */}
                     <Link to={user?.role === 'admin' ? '/admin' : '/'} className="flex items-center gap-2.5 group shrink-0">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-md shadow-brand-900/50 group-hover:scale-105 transition-transform">
-                            <FaTicketAlt className="text-white text-sm" />
-                        </div>
+                        <svg width="32" height="32" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" className="group-hover:scale-105 transition-transform shrink-0">
+                            <circle cx="256" cy="256" r="256" fill={dark ? "#ffffff" : "#000000"} />
+                            <path d="M 180 141 L 332 141 L 332 187 L 226 187 L 226 233 L 310 233 L 310 279 L 226 279 L 226 325 L 332 325 L 332 371 L 180 371 Z" fill={dark ? "#000000" : "#ffffff"} />
+                        </svg>
                         <span className={`text-xl font-black tracking-tight ${dark ? 'text-white' : 'text-gray-900'}`}>
                             Event<span className="text-brand-500">ora</span>
                         </span>
