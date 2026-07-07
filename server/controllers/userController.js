@@ -165,4 +165,51 @@ exports.transferSuperAdmin = async (req, res) => {
     }
 };
 
+/*
+ * ============================================================
+ *  HOW TO TRANSFER SUPER ADMIN TO ANOTHER USER
+ * ============================================================
+ *
+ * Use these API calls in order (Postman, curl, or any HTTP client).
+ * Replace <BASE_URL> with your server URL,
+ * e.g. https://eventora-server.onrender.com/api
+ *
+ * ── STEP 1: Login as the current super admin ──────────────────
+ *
+ *   POST <BASE_URL>/auth/login
+ *   Content-Type: application/json
+ *
+ *   Body:
+ *   {
+ *     "email": "current_superadmin@example.com",
+ *     "password": "yourpassword"
+ *   }
+ *
+ *   → Copy the "token" value from the response.
+ *
+ * ── STEP 2: Get all users to find the target user's _id ───────
+ *
+ *   GET <BASE_URL>/users
+ *   Authorization: Bearer <TOKEN_FROM_STEP_1>
+ *
+ *   → Find the user you want to promote in the response array.
+ *     Copy their "_id" value.
+ *
+ * ── STEP 3: Transfer super admin ──────────────────────────────
+ *
+ *   PUT <BASE_URL>/users/<TARGET_USER_ID>/superadmin
+ *   Authorization: Bearer <TOKEN_FROM_STEP_1>
+ *   (No request body needed)
+ *
+ *   → On success you will receive:
+ *   {
+ *     "message": "Super admin transferred to newadmin@example.com",
+ *     "newSuperAdmin": { "_id": "...", "name": "...", "email": "..." }
+ *   }
+ *
+ * ⚠️  WARNING: After Step 3 your current token immediately loses
+ *     super admin privileges. Log in fresh as the new super admin
+ *     if you need to continue managing the platform.
+ * ============================================================
+ */
 
