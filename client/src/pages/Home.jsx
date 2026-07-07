@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/axios';
 import { FaCalendarAlt, FaMapMarkerAlt, FaSearch, FaRegClock, FaTicketAlt, FaShieldAlt, FaArrowRight } from 'react-icons/fa';
@@ -45,6 +45,7 @@ const Home = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [hasMore, setHasMore] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
+    const eventsSectionRef = useRef(null);
 
     useEffect(() => {
         setPage(1);
@@ -56,6 +57,7 @@ const Home = () => {
     }, [search, page]);
 
     const fetchEvents = async (currentPage) => {
+        // Only show full skeleton on initial load or search change (page 1)
         if (currentPage === 1) setLoading(true);
         else setLoadingMore(true);
 
@@ -69,8 +71,9 @@ const Home = () => {
         } finally {
             setLoading(false);
             setLoadingMore(false);
-            if (currentPage > 1) {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Scroll to the events section (not the very top of the page)
+            if (currentPage > 1 && eventsSectionRef.current) {
+                eventsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
     };
@@ -128,7 +131,7 @@ const Home = () => {
             </div>
 
             {/* Events Header */}
-            <div className="flex items-center justify-between mb-8 px-1 border-b border-gray-200 dark:border-gray-700 pb-5">
+            <div ref={eventsSectionRef} className="flex items-center justify-between mb-8 px-1 border-b border-gray-200 dark:border-gray-700 pb-5">
                 <div>
                     <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">Upcoming Events</h2>
                     <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Find the perfect event for you</p>
