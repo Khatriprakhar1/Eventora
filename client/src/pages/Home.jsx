@@ -42,6 +42,7 @@ const Home = () => {
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [hasMore, setHasMore] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
 
@@ -60,17 +61,17 @@ const Home = () => {
 
         try {
             const { data } = await api.get(`/events?search=${search}&page=${currentPage}&limit=6`);
-            if (currentPage === 1) {
-                setEvents(data.events);
-            } else {
-                setEvents(prev => [...prev, ...data.events]);
-            }
+            setEvents(data.events);
             setHasMore(data.hasMore);
+            setTotalPages(Math.ceil(data.totalCount / 6) || 1);
         } catch (error) {
             console.error('Error fetching events:', error);
         } finally {
             setLoading(false);
             setLoadingMore(false);
+            if (currentPage > 1) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
     };
 
@@ -208,21 +209,26 @@ const Home = () => {
                     ))}
                 </div>
                 
-                {hasMore && (
-                    <div className="flex justify-center mt-12 mb-4 animate-fade-in">
+                {(page > 1 || hasMore) && (
+                    <div className="flex items-center justify-center gap-4 mt-12 mb-4 animate-fade-in">
+                        <button
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            disabled={page === 1 || loadingMore}
+                            className="bg-white dark:bg-gray-800 border-2 border-brand-100 dark:border-brand-900/50 hover:border-brand-300 dark:hover:border-brand-700 disabled:opacity-50 disabled:cursor-not-allowed text-brand-600 dark:text-brand-400 font-bold py-2.5 px-6 rounded-xl transition-all duration-300 hover:shadow-md flex items-center gap-2"
+                        >
+                            Previous
+                        </button>
+                        
+                        <span className="text-sm font-bold text-gray-500 dark:text-gray-400">
+                            Page {page} of {totalPages}
+                        </span>
+
                         <button
                             onClick={() => setPage(p => p + 1)}
-                            disabled={loadingMore}
-                            className="bg-white dark:bg-gray-800 border-2 border-brand-100 dark:border-brand-900/50 hover:border-brand-300 dark:hover:border-brand-700 text-brand-600 dark:text-brand-400 font-bold py-3 px-8 rounded-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 flex items-center gap-2"
+                            disabled={!hasMore || loadingMore}
+                            className="bg-white dark:bg-gray-800 border-2 border-brand-100 dark:border-brand-900/50 hover:border-brand-300 dark:hover:border-brand-700 disabled:opacity-50 disabled:cursor-not-allowed text-brand-600 dark:text-brand-400 font-bold py-2.5 px-6 rounded-xl transition-all duration-300 hover:shadow-md flex items-center gap-2"
                         >
-                            {loadingMore ? (
-                                <>
-                                    <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-                                    Loading...
-                                </>
-                            ) : (
-                                'Load More Events'
-                            )}
+                            Next
                         </button>
                     </div>
                 )}
