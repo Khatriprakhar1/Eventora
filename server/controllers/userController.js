@@ -1,5 +1,4 @@
 const User = require('../models/User');
-const Booking = require('../models/Booking');
 const mongoose = require('mongoose');
 
 // GET /api/users -- returns all users (no passwords) with their total booking count
@@ -166,62 +165,4 @@ exports.transferSuperAdmin = async (req, res) => {
     }
 };
 
-// DELETE /api/users/:id -- permanently delete a user and all their bookings (super admin only)
-exports.deleteUser = async (req, res) => {
-    try {
-        // Security: Only the super admin can delete accounts
-        if (!req.user.isSuperAdmin) {
-            return res.status(403).json({ message: 'Only the super admin can delete user accounts' });
-        }
-
-        const targetId = req.params.id;
-
-        if (!targetId || targetId.length !== 24 || !mongoose.Types.ObjectId.isValid(targetId)) {
-            return res.status(400).json({ message: 'Invalid user ID' });
-        }
-
-        // Security: Cannot delete yourself
-        if (req.user.id === targetId) {
-            return res.status(400).json({ message: 'You cannot delete your own account' });
-        }
-
-        const targetUser = await User.findById(targetId);
-        if (!targetUser) return res.status(404).json({ message: 'User not found' });
-
-        // Security: Cannot delete another super admin
-        if (targetUser.isSuperAdmin) {
-            return res.status(403).json({ message: 'Cannot delete a super admin account' });
-        }
-
-        // Delete all bookings belonging to this user
-        const { deletedCount } = await Booking.deleteMany({ userId: targetId });
-
-        // Permanently delete the user
-        await User.findByIdAndDelete(targetId);
-
-        res.json({
-            message: `User "${targetUser.name}" and ${deletedCount} booking(s) deleted successfully`,
-            deletedUserId: targetId,
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error', ...(process.env.NODE_ENV === 'development' && { error: error.message }) });
-    }
-};
-
-/* 
-Step 1: Get the target user's _id from the GET /api/users call above
-
-Step 2:
-
-PUT http://localhost:5000/api/users/<TARGET_USER_ID>/superadmin
-Authorization: Bearer <CURRENT-SUPER-ADMIN-TOKEN>
-No body needed. Response:
-
-json
-{
-  "message": "Super admin transferred to newadmin@example.com",
-  "newSuperAdmin": { "_id": "...", "name": "...", "email": "..." }
-}
-⚠️ This immediately revokes your own super admin and grants it to the other user. You'll need to log in as them to get it back.
-
-*/
+
