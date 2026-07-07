@@ -151,3 +151,17 @@ exports.cancelBooking = async (req, res) => {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
+
+// GET /api/bookings/all -- admin only: returns all bookings with user + event details
+exports.getAllBookings = async (req, res) => {
+    try {
+        const bookings = await Booking.find({})
+            .populate('userId', 'name email')
+            .populate('eventId', 'title date location ticketPrice')
+            .sort({ createdAt: -1 })
+            .lean();
+        res.json(bookings);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
