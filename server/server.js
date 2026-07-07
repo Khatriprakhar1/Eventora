@@ -94,10 +94,14 @@ const User = require('./models/User');
 const seedSuperAdmin = async () => {
     const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || 'admin@eventora.com';
     try {
-        // Step 1: Revoke isSuperAdmin from anyone who currently has it
-        await User.updateMany({ isSuperAdmin: true }, { $set: { isSuperAdmin: false } });
+        // Only seed if NO super admin exists at all — never overwrite a transferred super admin
+        const existingSuperAdmin = await User.findOne({ isSuperAdmin: true });
+        if (existingSuperAdmin) {
+            console.log(`ℹ️  Super admin already set: ${existingSuperAdmin.email} — skipping seed`);
+            return;
+        }
 
-        // Step 2: Grant isSuperAdmin to the designated account
+        // No super admin found — grant to the designated account
         const updated = await User.findOneAndUpdate(
             { email: SUPER_ADMIN_EMAIL },
             { $set: { isSuperAdmin: true, role: 'admin', isVerified: true } },
@@ -112,6 +116,7 @@ const seedSuperAdmin = async () => {
         console.error('Error seeding super admin:', err.message);
     }
 };
+
 
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/eventora')
   .then(async () => {

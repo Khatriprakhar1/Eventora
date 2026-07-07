@@ -114,9 +114,9 @@ exports.confirmBooking = async (req, res) => {
 
 exports.getMyBookings = async (req, res) => {
     try {
-        const bookings = req.user.role === 'admin'
-            ? await Booking.find().populate('eventId').populate('userId', 'name email').sort({ createdAt: -1 })
-            : await Booking.find({ userId: req.user.id }).populate('eventId').sort({ createdAt: -1 });
+        const bookings = await Booking.find({ userId: req.user.id })
+            .populate('eventId')
+            .sort({ createdAt: -1 });
         res.json(bookings);
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
@@ -139,11 +139,8 @@ exports.cancelBooking = async (req, res) => {
 
         // Only restore the seat if it was actually confirmed and deducted
         if (wasConfirmed) {
-            const event = await Event.findById(booking.eventId);
-            if (event) {
-                event.availableSeats += 1;
-                await event.save();
-            }
+            // Atomic increment — matches the atomic decrement used in confirmBooking
+            await Event.findByIdAndUpdate(booking.eventId, { $inc: { availableSeats: 1 } });
         }
 
         res.json({ message: 'Booking cancelled successfully' });

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     FaCalendarAlt, FaMapMarkerAlt, FaChair, FaTicketAlt,
     FaCheckCircle, FaTimesCircle, FaHourglassHalf,
-    FaTrashAlt, FaPlus, FaTimes, FaCrown, FaMoneyBillWave,
+    FaPlus, FaTimes, FaCrown, FaMoneyBillWave,
     FaUsers, FaTag, FaImage, FaAlignLeft, FaSearch, FaChevronDown,
     FaUserShield, FaBan,
 } from 'react-icons/fa';
