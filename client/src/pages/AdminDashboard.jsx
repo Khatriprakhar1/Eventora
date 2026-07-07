@@ -135,13 +135,13 @@ const AdminDashboard = () => {
         try {
             const [eventsRes, bookingsRes, usersRes] = await Promise.all([
                 api.get('/events'),
-                api.get('/bookings/my'),
+                api.get('/bookings/all'),   // admin endpoint: returns ALL bookings
                 api.get('/users'),
             ]);
             setEvents(eventsRes.data);
             setBookings(bookingsRes.data);
             setUsers(usersRes.data);
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error('Admin fetchData error:', e); }
         finally { setLoading(false); }
     };
 
