@@ -41,21 +41,36 @@ const Home = () => {
     const [events, setEvents] = useState([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => { fetchEvents(); }, 400);
-        return () => clearTimeout(timeoutId);
+        setPage(1);
     }, [search]);
 
-    const fetchEvents = async () => {
-        setLoading(true);
+    useEffect(() => {
+        const timeoutId = setTimeout(() => { fetchEvents(page); }, 400);
+        return () => clearTimeout(timeoutId);
+    }, [search, page]);
+
+    const fetchEvents = async (currentPage) => {
+        if (currentPage === 1) setLoading(true);
+        else setLoadingMore(true);
+
         try {
-            const { data } = await api.get(`/events?search=${search}`);
-            setEvents(data);
+            const { data } = await api.get(`/events?search=${search}&page=${currentPage}&limit=6`);
+            if (currentPage === 1) {
+                setEvents(data.events);
+            } else {
+                setEvents(prev => [...prev, ...data.events]);
+            }
+            setHasMore(data.hasMore);
         } catch (error) {
             console.error('Error fetching events:', error);
         } finally {
             setLoading(false);
+            setLoadingMore(false);
         }
     };
 
@@ -138,6 +153,7 @@ const Home = () => {
                     <p className="text-gray-400">Try a different search term or check back later.</p>
                 </div>
             ) : (
+                <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {events.map((event, i) => (
                         <div
@@ -191,6 +207,26 @@ const Home = () => {
                         </div>
                     ))}
                 </div>
+                
+                {hasMore && (
+                    <div className="flex justify-center mt-12 mb-4 animate-fade-in">
+                        <button
+                            onClick={() => setPage(p => p + 1)}
+                            disabled={loadingMore}
+                            className="bg-white dark:bg-gray-800 border-2 border-brand-100 dark:border-brand-900/50 hover:border-brand-300 dark:hover:border-brand-700 text-brand-600 dark:text-brand-400 font-bold py-3 px-8 rounded-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 flex items-center gap-2"
+                        >
+                            {loadingMore ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+                                    Loading...
+                                </>
+                            ) : (
+                                'Load More Events'
+                            )}
+                        </button>
+                    </div>
+                )}
+            </>
             )}
 
             {/* Footer */}

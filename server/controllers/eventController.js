@@ -15,8 +15,23 @@ exports.getEvents = async (req, res) => {
             filters.title = { $regex: escapeRegex(searchTerm), $options: 'i' };
         }
 
-        const events = await Event.find(filters).populate('createdBy', 'name email');
-        res.json(events);
+        const page = parseInt(req.query.page);
+        const limit = parseInt(req.query.limit) || 6;
+        let query = Event.find(filters).populate('createdBy', 'name email').sort({ date: 1 });
+
+        if (page) {
+            const skip = (page - 1) * limit;
+            const events = await query.skip(skip).limit(limit);
+            const totalCount = await Event.countDocuments(filters);
+            return res.json({
+                events,
+                totalCount,
+                hasMore: skip + events.length < totalCount
+            });
+        } else {
+            const events = await query;
+            return res.json(events);
+        }
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
