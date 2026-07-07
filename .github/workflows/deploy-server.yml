@@ -33,20 +33,29 @@ jobs:
               git pull origin main
             fi
 
-            # Go to server directory
             cd /home/ubuntu/Eventora/server
 
-            # Write .env from GitHub Secrets (overwrites each deploy to stay in sync)
-            cat > .env << 'ENVEOF'
-            MONGO_URI=$MONGO_URI
-            JWT_SECRET=$JWT_SECRET
-            CLIENT_URL=$CLIENT_URL
-            EMAIL_USER=$EMAIL_USER
-            EMAIL_PASS=$EMAIL_PASS
-            SUPER_ADMIN_EMAIL=$SUPER_ADMIN_EMAIL
-            NODE_ENV=$NODE_ENV
-            PORT=$PORT
-            ENVEOF
+            # Safe upsert: only write a key if the secret value is non-empty.
+            # Existing .env keys not listed here are left untouched.
+            upsert_env() {
+              local key=$1 val=$2
+              [ -z "$val" ] && return          # skip if secret not set
+              if grep -q "^${key}=" .env 2>/dev/null; then
+                sed -i "s|^${key}=.*|${key}=${val}|" .env
+              else
+                echo "${key}=${val}" >> .env
+              fi
+            }
+
+            touch .env
+            upsert_env MONGO_URI         "$MONGO_URI"
+            upsert_env JWT_SECRET        "$JWT_SECRET"
+            upsert_env CLIENT_URL        "$CLIENT_URL"
+            upsert_env EMAIL_USER        "$EMAIL_USER"
+            upsert_env EMAIL_PASS        "$EMAIL_PASS"
+            upsert_env SUPER_ADMIN_EMAIL "$SUPER_ADMIN_EMAIL"
+            upsert_env NODE_ENV          "$NODE_ENV"
+            upsert_env PORT              "$PORT"
 
             # Install production dependencies
             npm install --production
