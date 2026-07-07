@@ -74,6 +74,7 @@ export const AuthProvider = ({ children }) => {
             return data;
         } catch (error) {
             if (error.response?.data?.needsVerification) throw error.response.data;
+            if (!error.response) throw 'Unable to reach the server. Please check your connection.';
             throw error.response?.data?.message || 'Login failed';
         }
     };
