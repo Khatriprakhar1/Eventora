@@ -93,7 +93,7 @@ const TabBtn = ({ active, onClick, children, count, dark }) => (
 );
 
 const inputCls = (dark) =>
-    `w-full px-4 py-3 rounded-xl border text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 ${dark
+    `w-full px-4 py-2.5 rounded-xl border text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 ${dark
         ? 'bg-gray-900/60 border-gray-700 text-gray-100 placeholder-gray-500'
         : 'bg-gray-50 border-gray-200 text-gray-800 placeholder-gray-400'
     }`;
@@ -817,8 +817,8 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Form */}
-                        <form onSubmit={handleCreateEvent} className="p-7 space-y-5">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <form onSubmit={handleCreateEvent} className="p-5 space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Field label="Event Title" dark={dark}><input required type="text" placeholder="e.g. Tech Summit 2026" className={inputCls(dark)} value={formData.title} onChange={upd('title')} /></Field>
                                 <Field label="Category" dark={dark}><input required type="text" placeholder="e.g. Tech, Music, Sports" className={inputCls(dark)} value={formData.category} onChange={upd('category')} /></Field>
                                 <Field label="Date" dark={dark}><input required type="date" min={new Date().toISOString().split('T')[0]} className={inputCls(dark)} value={formData.date} onChange={upd('date')} /></Field>
@@ -827,14 +827,14 @@ const AdminDashboard = () => {
                                 <Field label="Ticket Price (₹)" dark={dark}><input required type="number" min="0" placeholder="0 for free" className={inputCls(dark)} value={formData.ticketPrice} onChange={upd('ticketPrice')} /></Field>
                             </div>
                             <Field label="Image URL (optional)" dark={dark}><input type="text" placeholder="https://example.com/image.jpg" className={inputCls(dark)} value={formData.image} onChange={upd('image')} /></Field>
-                            <Field label="Description" dark={dark}><textarea required rows={4} placeholder="Describe the event…" className={`${inputCls(dark)} resize-none`} value={formData.description} onChange={upd('description')} /></Field>
-                            <div className="flex gap-3 pt-2">
+                            <Field label="Description" dark={dark}><textarea required rows={3} placeholder="Describe the event…" className={`${inputCls(dark)} resize-none`} value={formData.description} onChange={upd('description')} /></Field>
+                            <div className="flex gap-3 pt-1">
                                 <button type="button" onClick={() => setShowForm(false)}
-                                    className={`flex-1 py-3 rounded-xl border font-bold text-sm transition ${dark ? 'border-white/15 text-gray-300 hover:bg-white/8' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                                    className={`flex-1 py-2.5 rounded-xl border font-bold text-sm transition ${dark ? 'border-white/15 text-gray-300 hover:bg-white/8' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
                                     Cancel
                                 </button>
                                 <button type="submit"
-                                    className="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-black py-3 rounded-xl transition shadow-lg hover:-translate-y-0.5 text-sm flex items-center justify-center gap-2">
+                                    className="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-black py-2.5 rounded-xl transition shadow-lg hover:-translate-y-0.5 text-sm flex items-center justify-center gap-2">
                                     <FaPlus className="text-xs" /> Publish Event
                                 </button>
                             </div>
