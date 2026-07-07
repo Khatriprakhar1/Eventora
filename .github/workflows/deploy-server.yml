@@ -22,6 +22,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
+          envs: MONGO_URI,JWT_SECRET,CLIENT_URL,EMAIL_USER,EMAIL_PASS,SUPER_ADMIN_EMAIL,NODE_ENV,PORT
           script: |
             # Clone repo if first time, otherwise pull latest
             if [ ! -d "/home/ubuntu/Eventora" ]; then
@@ -33,6 +34,18 @@ jobs:
 
             # Go to server directory
             cd /home/ubuntu/Eventora/server
+
+            # Write .env from GitHub Secrets (overwrites each deploy to stay in sync)
+            cat > .env << 'ENVEOF'
+            MONGO_URI=$MONGO_URI
+            JWT_SECRET=$JWT_SECRET
+            CLIENT_URL=$CLIENT_URL
+            EMAIL_USER=$EMAIL_USER
+            EMAIL_PASS=$EMAIL_PASS
+            SUPER_ADMIN_EMAIL=$SUPER_ADMIN_EMAIL
+            NODE_ENV=$NODE_ENV
+            PORT=$PORT
+            ENVEOF
 
             # Install production dependencies
             npm install --production
