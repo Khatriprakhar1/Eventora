@@ -166,7 +166,7 @@ exports.transferSuperAdmin = async (req, res) => {
     }
 };
 
-// DELETE /api/users/:id -- soft-delete a user (marks isDeleted=true, keeps record in DB)
+// DELETE /api/users/:id -- permanently delete a user and all their bookings (super admin only)
 exports.deleteUser = async (req, res) => {
     try {
         // Security: Only the super admin can delete accounts
@@ -193,25 +193,21 @@ exports.deleteUser = async (req, res) => {
             return res.status(403).json({ message: 'Cannot delete a super admin account' });
         }
 
-        // Already soft-deleted
-        if (targetUser.isDeleted) {
-            return res.status(400).json({ message: 'User account is already deleted' });
-        }
+        // Delete all bookings belonging to this user
+        const { deletedCount } = await Booking.deleteMany({ userId: targetId });
 
-        // Soft delete: mark as deleted but keep record in DB for audit trail
-        targetUser.isDeleted = true;
-        targetUser.deletedAt = new Date();
-        targetUser.isSuspended = true; // also suspend so they can't log in even if flag is missed
-        await targetUser.save();
+        // Permanently delete the user
+        await User.findByIdAndDelete(targetId);
 
         res.json({
-            message: `User "${targetUser.name}" has been deleted. Their record is retained for audit purposes.`,
+            message: `User "${targetUser.name}" and ${deletedCount} booking(s) deleted successfully`,
             deletedUserId: targetId,
         });
     } catch (error) {
         res.status(500).json({ message: 'Server Error', ...(process.env.NODE_ENV === 'development' && { error: error.message }) });
     }
 };
+
 /* 
 Step 1: Get the target user's _id from the GET /api/users call above
 

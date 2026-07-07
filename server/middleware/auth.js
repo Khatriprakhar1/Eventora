@@ -11,10 +11,6 @@ const protect = async (req, res, next) => {
             if (!req.user) {
                 return res.status(401).json({ message: 'Not authorized, user not found' });
             }
-            // Security: Block deleted accounts — return distinct 410 so client can show proper message
-            if (req.user.isDeleted) {
-                return res.status(410).json({ message: 'Your account has been deleted by an administrator.' });
-            }
             // Security: Block suspended accounts from all protected routes
             if (req.user.isSuspended) {
                 return res.status(403).json({ message: 'Account suspended' });
