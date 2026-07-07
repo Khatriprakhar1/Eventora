@@ -16,7 +16,7 @@ import Profile from './pages/Profile';
 import MyTickets from './pages/MyTickets';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { AuthContext } from './context/AuthContext';
-import { FaTicketAlt, FaBan } from 'react-icons/fa';
+import { FaTicketAlt, FaBan, FaUserSlash } from 'react-icons/fa';
 
 // Blocks admin from accessing regular user pages — redirects to /admin
 const BlockAdmin = ({ children }) => {
@@ -103,9 +103,59 @@ const SuspendedOverlay = () => {
     );
 };
 
+// Full-screen overlay shown when the user's account has been soft-deleted
+const DeletedOverlay = () => {
+    const { deletedMessage, clearDeletedMessage } = useContext(AuthContext);
+    const { dark } = useTheme();
+    const navigate = useNavigate();
+
+    const handleDismiss = () => {
+        clearDeletedMessage();
+        navigate('/login');
+    };
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className={`relative w-full max-w-sm rounded-3xl shadow-2xl animate-fade-in overflow-hidden ${
+                dark ? 'bg-gray-900 border border-white/10' : 'bg-white border border-gray-200'
+            }`}>
+                {/* Thin red top bar */}
+                <div className="h-1 w-full bg-gradient-to-r from-gray-500 to-gray-700" />
+
+                <div className="p-8 text-center">
+                    {/* Icon */}
+                    <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-5">
+                        <FaUserSlash className="text-gray-500 dark:text-gray-400 text-2xl" />
+                    </div>
+
+                    {/* Text */}
+                    <h2 className={`text-xl font-bold mb-2 ${dark ? 'text-white' : 'text-gray-900'}`}>
+                        Account Deleted
+                    </h2>
+                    <p className={`text-sm leading-relaxed mb-7 ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {deletedMessage || 'Your account has been deleted by an administrator.'}
+                        {' '}If you believe this is a mistake, please contact support.
+                    </p>
+
+                    {/* Divider */}
+                    <div className={`border-t mb-6 ${dark ? 'border-white/8' : 'border-gray-100'}`} />
+
+                    {/* Dismiss button */}
+                    <button
+                        onClick={handleDismiss}
+                        className="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 rounded-xl text-sm transition hover:-translate-y-0.5 shadow-md"
+                    >
+                        Go to Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const AppInner = () => {
     const { dark } = useTheme();
-    const { isSuspended } = useContext(AuthContext);
+    const { isSuspended, deletedMessage } = useContext(AuthContext);
 
     return (
         <div
@@ -118,6 +168,8 @@ const AppInner = () => {
         >
             {/* Suspended overlay — sits above everything */}
             {isSuspended && <SuspendedOverlay />}
+            {/* Deleted overlay — shown when account is soft-deleted */}
+            {deletedMessage && <DeletedOverlay />}
 
             <Navbar />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">

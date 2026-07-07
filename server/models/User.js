@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     isSuspended: { type: Boolean, default: false },
     isSuperAdmin: { type: Boolean, default: false },
+    isDeleted: { type: Boolean, default: false },
+    deletedAt: { type: Date, default: null },
     nameLastChangedAt: { type: Date, default: null },
     passwordChangedAt: { type: Date, default: null },
     avatar: { type: String, default: null }   // base64 compressed image

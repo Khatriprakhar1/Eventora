@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isSuspended, setIsSuspended] = useState(false);
+    const [deletedMessage, setDeletedMessage] = useState(null); // shown when account is soft-deleted
     const interceptorRef = useRef(null);
 
     useEffect(() => {
@@ -21,8 +22,16 @@ export const AuthProvider = ({ children }) => {
                     setIsSuspended(true);
                 }
 
-                // Auto-logout if the server says the user no longer exists
-                // or the token is invalid/expired
+                // 410 = account soft-deleted — show a proper message instead of silent logout
+                if (status === 410) {
+                    setUser(null);
+                    setIsSuspended(false);
+                    setDeletedMessage(message || 'Your account has been deleted by an administrator.');
+                    localStorage.removeItem('userInfo');
+                    localStorage.removeItem('token');
+                }
+
+                // 401 = token invalid / user truly gone from DB
                 if (status === 401) {
                     setUser(null);
                     setIsSuspended(false);
@@ -39,6 +48,7 @@ export const AuthProvider = ({ children }) => {
             }
         };
     }, []);
+
 
     useEffect(() => {
         const userInfo = localStorage.getItem('userInfo');
@@ -104,9 +114,12 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         setUser(null);
         setIsSuspended(false);
+        setDeletedMessage(null);
         localStorage.removeItem('userInfo');
         localStorage.removeItem('token');
     };
+
+    const clearDeletedMessage = () => setDeletedMessage(null);
 
     const updateUser = (updatedData) => {
         const merged = { ...user, ...updatedData };
@@ -115,7 +128,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, verifyOTP, logout, updateUser, loading, isSuspended }}>
+        <AuthContext.Provider value={{ user, login, register, verifyOTP, logout, updateUser, loading, isSuspended, deletedMessage, clearDeletedMessage }}>
             {!loading && children}
         </AuthContext.Provider>
     );
