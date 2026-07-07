@@ -181,20 +181,6 @@ const AdminDashboard = () => {
         });
     };
 
-    const handleDeleteUser = (u) => {
-        setConfirmState({
-            userId: u._id,
-            label: `Permanently delete "${u.name}" and all their bookings?`,
-            danger: true,
-            fn: async () => {
-                try {
-                    await api.delete(`/users/${u._id}`);
-                    fetchUsers();
-                } catch (err) { alert(err.response?.data?.message || 'Error deleting user'); }
-            },
-        });
-    };
-
 
     const executeConfirm = async () => {
         if (!confirmState) return;
@@ -727,17 +713,6 @@ const AdminDashboard = () => {
                                                                 </button>
                                                             )}
 
-                                                            {/* Delete — super admin only, not self, not another super admin */}
-                                                            {user?.isSuperAdmin && !isSelf && !isTargetSuperAdmin && (
-                                                                <button
-                                                                    onClick={() => handleDeleteUser(u)}
-                                                                    className="flex items-center gap-1.5 text-xs font-bold py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white shadow-md transition hover:-translate-y-0.5"
-                                                                    title="Permanently delete user and all bookings"
-                                                                >
-                                                                    <FaTrashAlt className="text-[10px]" />
-                                                                    Delete
-                                                                </button>
-                                                            )}
 
                                                         </>
                                                     )}
