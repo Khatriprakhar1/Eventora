@@ -10,16 +10,26 @@ export const AuthProvider = ({ children }) => {
     const interceptorRef = useRef(null);
 
     useEffect(() => {
-        // Axios interceptor: catch 403 "Account suspended" from any protected route
+        // Axios interceptor: catch auth errors from any protected route
         interceptorRef.current = api.interceptors.response.use(
             (response) => response,
             (error) => {
-                if (
-                    error.response?.status === 403 &&
-                    error.response?.data?.message === 'Account suspended'
-                ) {
+                const status = error.response?.status;
+                const message = error.response?.data?.message;
+
+                if (status === 403 && message === 'Account suspended') {
                     setIsSuspended(true);
                 }
+
+                // Auto-logout if the server says the user no longer exists
+                // or the token is invalid/expired
+                if (status === 401) {
+                    setUser(null);
+                    setIsSuspended(false);
+                    localStorage.removeItem('userInfo');
+                    localStorage.removeItem('token');
+                }
+
                 return Promise.reject(error);
             }
         );
@@ -36,18 +46,26 @@ export const AuthProvider = ({ children }) => {
             const parsed = JSON.parse(userInfo);
             setUser(parsed);
             // Silently refresh from server to sync avatar + any updated fields
+            // If 401 is returned (user deleted), the interceptor above handles logout
             api.get('/profile')
                 .then(({ data }) => {
                     const merged = { ...parsed, ...data };
                     setUser(merged);
                     localStorage.setItem('userInfo', JSON.stringify(merged));
                 })
-                .catch(() => {}) // ignore if token expired etc.
+                .catch((err) => {
+                    // Only ignore non-auth errors (network issues etc.)
+                    // 401 is already handled by the interceptor above
+                    if (err.response?.status !== 401) {
+                        console.warn('Profile refresh failed:', err.message);
+                    }
+                })
                 .finally(() => setLoading(false));
         } else {
             setLoading(false);
         }
     }, []);
+
 
     const login = async (email, password) => {
         try {
