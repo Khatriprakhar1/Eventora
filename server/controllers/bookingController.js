@@ -43,11 +43,27 @@ exports.bookEvent = async (req, res) => {
             return res.status(403).json({ message: 'Please verify your account before booking' });
         }
 
-        // Verify OTP explicitly before proceeding
-        const validOTP = await OTP.findOne({ email: req.user.email, otp, action: 'event_booking' });
-        if (!validOTP) {
+        // Verify OTP with brute-force protection (mirrors auth OTP logic)
+        const otpRecord = await OTP.findOne({ email: req.user.email, action: 'event_booking' });
+        if (!otpRecord) {
             return res.status(400).json({ message: 'Invalid or expired OTP for booking' });
         }
+        const MAX_ATTEMPTS = 3;
+        if (otpRecord.attempts >= MAX_ATTEMPTS) {
+            await OTP.deleteOne({ _id: otpRecord._id });
+            return res.status(400).json({ message: 'Too many incorrect attempts. Please request a new OTP.' });
+        }
+        if (otpRecord.otp !== otp) {
+            otpRecord.attempts += 1;
+            await otpRecord.save();
+            const remaining = MAX_ATTEMPTS - otpRecord.attempts;
+            return res.status(400).json({
+                message: remaining > 0
+                    ? `Incorrect OTP. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`
+                    : 'Too many incorrect attempts. Please request a new OTP.',
+            });
+        }
+        const validOTP = otpRecord;
 
         const event = await Event.findById(eventId);
         if (!event) return res.status(404).json({ message: 'Event not found' });
@@ -114,9 +130,9 @@ exports.confirmBooking = async (req, res) => {
 
 exports.getMyBookings = async (req, res) => {
     try {
-        const bookings = await Booking.find({ userId: req.user.id })
-            .populate('eventId')
-            .sort({ createdAt: -1 });
+        const bookings = req.user.role === 'admin'
+            ? await Booking.find().populate('eventId').populate('userId', 'name email').sort({ createdAt: -1 })
+            : await Booking.find({ userId: req.user.id }).populate('eventId').sort({ createdAt: -1 });
         res.json(bookings);
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
@@ -138,8 +154,8 @@ exports.cancelBooking = async (req, res) => {
         await booking.save();
 
         // Only restore the seat if it was actually confirmed and deducted
+        // Use atomic $inc to prevent race conditions with concurrent cancellations
         if (wasConfirmed) {
-            // Atomic increment — matches the atomic decrement used in confirmBooking
             await Event.findByIdAndUpdate(booking.eventId, { $inc: { availableSeats: 1 } });
         }
 
@@ -154,7 +170,7 @@ exports.getAllBookings = async (req, res) => {
     try {
         const bookings = await Booking.find({})
             .populate('userId', 'name email')
-            .populate('eventId', 'title date location ticketPrice')
+            .populate('eventId', 'title date location ticketPrice availableSeats totalSeats category')
             .sort({ createdAt: -1 })
             .lean();
         res.json(bookings);

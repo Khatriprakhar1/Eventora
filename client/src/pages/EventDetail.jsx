@@ -73,6 +73,7 @@ const EventDetail = () => {
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Booking failed');
+            setSuccessMsg(''); // Clear stale success message when an error occurs
         } finally {
             setBookingLoading(false);
         }

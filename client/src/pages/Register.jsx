@@ -113,7 +113,9 @@ const Register = () => {
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
                                     <div className="relative">
-                                        <input type={showPassword ? 'text' : 'password'} required placeholder="Min. 8 characters"
+                                        <input type={showPassword ? 'text' : 'password'} required
+                                            minLength={8} maxLength={128}
+                                            placeholder="Min. 8 characters"
                                             className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:text-white focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-brand-400 focus:border-brand-400 focus:outline-none transition text-sm placeholder-gray-400 dark:placeholder-gray-500"
                                             value={password} onChange={(e) => setPassword(e.target.value)} />
                                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition p-1">

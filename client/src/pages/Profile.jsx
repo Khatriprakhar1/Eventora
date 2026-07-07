@@ -67,7 +67,12 @@ const Profile = () => {
                     setNameCooldown(null);
                 }
             }
-        }).catch(() => {});
+        }).catch((err) => {
+            // Show a friendly error if the account is not yet verified (403)
+            if (err.response?.status === 403) {
+                setError('Your account is not verified yet. Please check your email for a verification OTP.');
+            }
+        });
     }, [navigate]);
 
     /* Handle file pick → compress → set preview */

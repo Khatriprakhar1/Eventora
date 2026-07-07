@@ -27,8 +27,8 @@ exports.register = async (req, res) => {
         if (!isValidEmail(email)) {
             return res.status(400).json({ message: 'Please provide a valid email address' });
         }
-        if (password.length < 6) {
-            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+        if (password.length < 8) {
+            return res.status(400).json({ message: 'Password must be at least 8 characters' });
         }
         if (password.length > 128) {
             return res.status(400).json({ message: 'Password is too long' });
@@ -74,13 +74,14 @@ exports.login = async (req, res) => {
         // Security: Generic error message to avoid user enumeration
         if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
-
-        // Security: Block suspended accounts before any further checks
+        // Security: Block suspended accounts BEFORE bcrypt to prevent credential-oracle attacks
+        // (avoids leaking whether a password is correct via 403 vs 400 status difference)
         if (user.isSuspended) {
             return res.status(403).json({ message: 'Account suspended' });
         }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
         if (!user.isVerified && user.role !== 'admin') {
             const otp = generateOTP();

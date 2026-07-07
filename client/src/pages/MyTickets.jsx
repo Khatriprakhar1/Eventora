@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../utils/axios';
-import { FaTicketAlt, FaCalendarAlt, FaMapMarkerAlt, FaMoneyBillWave, FaDownload } from 'react-icons/fa';
+import { FaTicketAlt, FaCalendarAlt, FaMapMarkerAlt, FaMoneyBillWave } from 'react-icons/fa';
 
 const QRCode = ({ value }) => {
     // Visual QR placeholder — unique per booking

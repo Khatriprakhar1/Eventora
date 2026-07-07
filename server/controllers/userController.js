@@ -44,7 +44,7 @@ exports.updateUserRole = async (req, res) => {
             return res.status(400).json({ message: 'You cannot change your own role' });
         }
 
-        if (!targetId || targetId.length !== 24) {
+        if (!mongoose.isValidObjectId(targetId)) {
             return res.status(400).json({ message: 'Invalid user ID' });
         }
 
@@ -77,7 +77,7 @@ exports.toggleUserStatus = async (req, res) => {
             return res.status(400).json({ message: 'You cannot suspend your own account' });
         }
 
-        if (!targetId || targetId.length !== 24) {
+        if (!mongoose.isValidObjectId(targetId)) {
             return res.status(400).json({ message: 'Invalid user ID' });
         }
 
@@ -109,7 +109,7 @@ exports.forceVerifyUser = async (req, res) => {
     try {
         const targetId = req.params.id;
 
-        if (!targetId || targetId.length !== 24) {
+        if (!mongoose.isValidObjectId(targetId)) {
             return res.status(400).json({ message: 'Invalid user ID' });
         }
 
@@ -138,7 +138,7 @@ exports.transferSuperAdmin = async (req, res) => {
         }
 
         const targetId = req.params.id;
-        if (!targetId || targetId.length !== 24) {
+        if (!mongoose.isValidObjectId(targetId)) {
             return res.status(400).json({ message: 'Invalid user ID' });
         }
         if (req.user.id === targetId) {

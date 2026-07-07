@@ -6,12 +6,12 @@ import { FaTicketAlt, FaTimesCircle, FaCalendarAlt, FaMoneyBillWave, FaSearch } 
 
 const STATUS_CONFIG = {
     confirmed: { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500', pulse: true },
-    pending:   { bg: 'bg-amber-100 dark:bg-amber-900/40',   text: 'text-amber-700 dark:text-amber-400',   dot: 'bg-amber-500',   pulse: true },
-    cancelled: { bg: 'bg-red-100 dark:bg-red-900/40',       text: 'text-red-700 dark:text-red-400',       dot: 'bg-red-400',     pulse: false },
+    pending: { bg: 'bg-amber-100 dark:bg-amber-900/40', text: 'text-amber-700 dark:text-amber-400', dot: 'bg-amber-500', pulse: true },
+    cancelled: { bg: 'bg-red-100 dark:bg-red-900/40', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-400', pulse: false },
 };
 const PAYMENT_CONFIG = {
-    paid:     { bg: 'bg-blue-100 dark:bg-blue-900/40',   text: 'text-blue-700 dark:text-blue-400'  },
-    not_paid: { bg: 'bg-gray-100 dark:bg-gray-700',       text: 'text-gray-600 dark:text-gray-400'  },
+    paid: { bg: 'bg-blue-100 dark:bg-blue-900/40', text: 'text-blue-700 dark:text-blue-400' },
+    not_paid: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-400' },
 };
 
 const SkeletonCard = () => (
@@ -33,8 +33,6 @@ const UserDashboard = () => {
     const navigate = useNavigate();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [cancelTarget, setCancelTarget] = useState(null); // { id, title }
-    const [cancelError, setCancelError] = useState('');
 
     useEffect(() => {
         if (!user) { navigate('/login'); return; }
@@ -52,15 +50,14 @@ const UserDashboard = () => {
         }
     };
 
-    const cancelBooking = async () => {
-        if (!cancelTarget) return;
-        try {
-            await api.delete(`/bookings/${cancelTarget.id}`);
-            setCancelTarget(null);
-            setCancelError('');
-            fetchBookings();
-        } catch (error) {
-            setCancelError(error.response?.data?.message || 'Error cancelling booking');
+    const cancelBooking = async (id) => {
+        if (window.confirm('Are you sure you want to cancel this booking request?')) {
+            try {
+                await api.delete(`/bookings/${id}`);
+                fetchBookings();
+            } catch (error) {
+                alert(error.response?.data?.message || 'Error cancelling booking');
+            }
         }
     };
 
@@ -178,18 +175,9 @@ const UserDashboard = () => {
                                     {booking.eventId && booking.status !== 'cancelled' ? (
                                         <>
                                             <Link to={`/events/${booking.eventId._id}`} className="text-brand-600 dark:text-brand-400 font-semibold text-xs hover:underline transition">View Event →</Link>
-                                            {cancelTarget?.id === booking._id ? (
-                                                <div className="flex items-center gap-2 text-xs">
-                                                    {cancelError && <span className="text-red-500">{cancelError}</span>}
-                                                    <span className="text-gray-600 dark:text-gray-400 font-semibold">Cancel?</span>
-                                                    <button onClick={cancelBooking} className="bg-red-500 hover:bg-red-600 text-white font-bold px-2.5 py-1 rounded-lg transition">Yes</button>
-                                                    <button onClick={() => { setCancelTarget(null); setCancelError(''); }} className="border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 font-bold px-2.5 py-1 rounded-lg transition hover:bg-gray-100 dark:hover:bg-gray-700">No</button>
-                                                </div>
-                                            ) : (
-                                                <button onClick={() => setCancelTarget({ id: booking._id, title: booking.eventId.title })} className="text-red-400 font-semibold text-xs hover:text-red-600 transition flex items-center gap-1">
-                                                    <FaTimesCircle /> Cancel
-                                                </button>
-                                            )}
+                                            <button onClick={() => cancelBooking(booking._id)} className="text-red-400 font-semibold text-xs hover:text-red-600 transition flex items-center gap-1">
+                                                <FaTimesCircle /> Cancel
+                                            </button>
                                         </>
                                     ) : (
                                         <div className="w-full text-center text-xs text-gray-400 dark:text-gray-500 italic">Booking Cancelled</div>

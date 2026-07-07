@@ -137,17 +137,20 @@ exports.updateEvent = async (req, res) => {
         const existingEvent = await Event.findById(req.params.id);
         if (!existingEvent) return res.status(404).json({ message: 'Event not found' });
 
-        // Calculate how many seats were added/removed vs the old totalSeats
-        const seatDiff = seats - existingEvent.totalSeats;
-        const newAvailableSeats = Math.max(0, existingEvent.availableSeats + seatDiff);
+        // Recalculate availableSeats based on the delta to totalSeats
+        const seatDelta = seats - existingEvent.totalSeats;
+        const newAvailableSeats = Math.max(0, existingEvent.availableSeats + seatDelta);
 
         const event = await Event.findByIdAndUpdate(
             req.params.id,
-            { title: title.trim(), description: description.trim(), date, location: location.trim(),
-              category: category.trim(), totalSeats: seats, availableSeats: newAvailableSeats,
-              ticketPrice: price, image: image || '' },
+            {
+                title: title.trim(), description: description.trim(), date, location: location.trim(),
+                category: category.trim(), totalSeats: seats, availableSeats: newAvailableSeats,
+                ticketPrice: price, image: image || ''
+            },
             { new: true }
         );
+        if (!event) return res.status(404).json({ message: 'Event not found' });
         res.json(event);
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });

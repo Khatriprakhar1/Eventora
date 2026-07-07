@@ -74,11 +74,13 @@ const adminLimiter = rateLimit({
 });
 
 // Apply rate limiters
-app.use('/api/events', globalLimiter);
-app.use('/api/bookings', globalLimiter);
-app.use('/api/auth', authLimiter);
+// ⚠️  OTP-specific routes MUST be registered before the broad /api/auth limiter,
+//     otherwise Express matches /api/auth first and the stricter otpLimiter is never reached.
 app.use('/api/auth/verify-otp', otpLimiter);
 app.use('/api/bookings/send-otp', otpLimiter);
+app.use('/api/auth', authLimiter);
+app.use('/api/events', globalLimiter);
+app.use('/api/bookings', globalLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -94,14 +96,10 @@ const User = require('./models/User');
 const seedSuperAdmin = async () => {
     const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL || 'admin@eventora.com';
     try {
-        // Only seed if NO super admin exists at all — never overwrite a transferred super admin
-        const existingSuperAdmin = await User.findOne({ isSuperAdmin: true });
-        if (existingSuperAdmin) {
-            console.log(`ℹ️  Super admin already set: ${existingSuperAdmin.email} — skipping seed`);
-            return;
-        }
+        // Step 1: Revoke isSuperAdmin from anyone who currently has it
+        await User.updateMany({ isSuperAdmin: true }, { $set: { isSuperAdmin: false } });
 
-        // No super admin found — grant to the designated account
+        // Step 2: Grant isSuperAdmin to the designated account
         const updated = await User.findOneAndUpdate(
             { email: SUPER_ADMIN_EMAIL },
             { $set: { isSuperAdmin: true, role: 'admin', isVerified: true } },
@@ -117,13 +115,12 @@ const seedSuperAdmin = async () => {
     }
 };
 
-
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/eventora')
-  .then(async () => {
-      console.log('MongoDB Connected');
-      await seedSuperAdmin();
-  })
-  .catch(err => console.error('MongoDB Connection Error:', err));
+    .then(async () => {
+        console.log('MongoDB Connected');
+        await seedSuperAdmin();
+    })
+    .catch(err => console.error('MongoDB Connection Error:', err));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
