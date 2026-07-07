@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Booking = require('../models/Booking');
 const mongoose = require('mongoose');
 
 // GET /api/users -- returns all users (no passwords) with their total booking count
