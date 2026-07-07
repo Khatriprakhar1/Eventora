@@ -74,7 +74,7 @@ const Contact = () => {
                 {/* Contact Info */}
                 <div className="space-y-5">
                     {[
-                        { icon: <FaEnvelope className="text-brand-500" />, label: 'Email', value: 'prakharkhatrii@gmail.com' },
+                        { icon: <FaEnvelope className="text-brand-500" />, label: 'Email', value: 'admineventora@gmail.com' },
                         { icon: <FaMapMarkerAlt className="text-brand-500" />, label: 'Based in', value: 'India 🇮🇳' },
                         { icon: <FaClock className="text-brand-500" />, label: 'Response time', value: 'Within 24 hours' },
                     ].map(({ icon, label, value }) => (
